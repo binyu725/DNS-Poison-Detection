@@ -1,0 +1,55 @@
+CSE 508 HW3
+Name: Bin Yu
+SBU ID: 111477171
+
+Implementation:
+
+dnspoison.go:
+
+1. Main function finds the default device to capture.
+2. Then, it reads the arguments from command line and stores them into variables.
+3. If the device is not provided, then uses the default device. 
+4. Main function finally calls spoof() function and passes all variables from command line to start spoof networks.
+
+5. For the spoof() function, it firstly captures the network of the given device and set BPF filters to it.
+6. If it captures a DNS request, it firstly determined if it is the hosts which are going to be poisoned.
+7. Then it creates a forged response based on the DNS request and sends it back to the victim. 
+
+dnsdetect.go
+
+1. Main function almost works the same as the dnspoison. 
+2. It will call detect() function and passes all variables from command line to start detect the dns poison.
+
+3. For the detect() function, it will determine whether it reads packets from file or capture from network device, and then apply BPF filter to the packets.
+4. When the function detect a DNS response, it will save the response to the slice. 
+5. Whenever receving a new response, it will compare the new response to the old response in the slice to check whether there is a DNS poison.
+6. If DNS poison is detected, it will printout two responses. 
+
+
+
+
+hw3_poison.pcap:
+
+It is the pcap trace of running the dnspoison.go with hostnames file, and then go to the websites www.bankofamerica.com and www.apple.com.
+
+
+
+hostnames file:
+
+10.0.2.15 www.bankofamerica.com
+192.168.66.6 www.apple.com
+
+
+
+dnsdetect.go output for reading hw3_poison.pcap:
+
+2021-04-09 18:14:26.620184 -0400 EDT DNS poisoning attempt
+TXID 50362 Request www.bankofamerica.com
+Answer1 [10.0.2.15]
+Answer2 [171.161.100.100]
+
+2021-04-09 18:14:37.952089 -0400 EDT DNS poisoning attempt
+TXID 35115 Request www.apple.com
+Answer1 [192.168.66.6]
+Answer2 [23.209.184.212]
+
